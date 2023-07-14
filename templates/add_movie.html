@@ -1,25 +1,23 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
     <title>Add Movie</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
-    <h1>Add Movie</h1>
-    <form method="POST" action="{{ url_for('add_movie', user_id=user_id) }}">
-        <label for="name">Movie Title:</label>
-        <input type="text" id="name" name="name" required>
-
-        <label for="director">Director:</label>
-        <input type="text" id="director" name="director" required>
-
-        <label for="year">Year:</label>
-        <input type="number" id="year" name="year" required>
-
-        <label for="rating">Rating:</label>
-        <input type="number" id="rating" name="rating" step="0.1" min="0" max="10" required>
-
-        <input type="submit" value="Add Movie">
-    </form>
+{% if error_message %}
+<div class="alert alert-danger">
+  {{ error_message }}
+</div>
+{% endif %}
+    <div class="container py-5">
+        <h1 class="mb-4">Add Movie</h1>
+<form method="POST" action="{{ url_for('add_movie', user_id=user_id) }}">
+    <label for="name">Movie Title:</label>
+    <input type="text" id="name" name="name" class="form-control" required>
+    <button type="submit" class="btn btn-primary">Add Movie</button>
+</form>
+    </div>
 </body>
 </html>
-
