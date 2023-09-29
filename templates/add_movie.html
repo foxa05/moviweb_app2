@@ -13,11 +13,13 @@
 {% endif %}
     <div class="container py-5">
         <h1 class="mb-4">Add Movie</h1>
-<form method="POST" action="{{ url_for('add_movie', user_id=user_id) }}">
-    <label for="name">Movie Title:</label>
-    <input type="text" id="name" name="name" class="form-control" required>
-    <button type="submit" class="btn btn-primary">Add Movie</button>
-</form>
+        <a href="{{ url_for('user_movies', user_id=user_id) }}" class="btn btn-secondary mb-3">Back</a>
+
+        <form method="POST" action="{{ url_for('add_movie', user_id=user_id) }}">
+            <label for="name">Movie Title:</label>
+            <input type="text" id="name" name="name" class="form-control" required>
+            <button type="submit" class="btn btn-primary">Add Movie</button>
+        </form>
     </div>
 </body>
 </html>

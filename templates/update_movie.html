@@ -8,10 +8,13 @@
 <body>
 <div class="container py-5">
     <h1 class="mb-4">Update Movie</h1>
+
+    <a href="{{ url_for('user_movies', user_id=user_id) }}" class="btn btn-secondary mb-3">Back</a>
+
     <form method="POST" action="{{ url_for('update_movie', user_id=user_id, movie_id=movie_id) }}" class="needs-validation" novalidate>
         <div class="form-group">
             <label for="name">Movie Title:</label>
-            <input type="text" id="name" name="name" value="{{ movie.name }}" class="form-control" required>
+            <input type="text" id="name" name="title" value="{{ movie.title }}" class="form-control" required>
         </div>
         <div class="form-group">
             <label for="director">Director:</label>
