@@ -1,14 +1,15 @@
 from flask import Flask, render_template, request, redirect, url_for
 from DataManager.sqlite_data_manager import SQLiteDataManager
-from DataManager.data_manager_interface import DataManagerInterface
 from models import User, Movie
 from database import db
+from api import api
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////Users/larissamatteau/PycharmProjects/moviweb_app/data/library.sqlite'
 db.init_app(app)
 
 data_manager = SQLiteDataManager(app)  # Initialize the data manager
+app.register_blueprint(api, url_prefix='/api')
 
 
 @app.route('/')
