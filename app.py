@@ -1,15 +1,56 @@
 from flask import Flask, render_template, request, redirect, url_for
+from flask_sqlalchemy import SQLAlchemy
 from DataManager.sqlite_data_manager import SQLiteDataManager
 from models import User, Movie
 from database import db
 from api import api
+import requests
+import os
 
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////Users/larissamatteau/PycharmProjects/moviweb_app/data/library.sqlite'
+current_directory = os.path.dirname(os.path.abspath(__file__))
+
+relative_db_path = 'data/library.sqlite'
+db_uri = f'sqlite:///{os.path.join(current_directory, relative_db_path)}'
+app.config['SQLALCHEMY_DATABASE_URI'] = db_uri
 db.init_app(app)
 
-data_manager = SQLiteDataManager(app)  # Initialize the data manager
+data_manager = SQLiteDataManager(app)
 app.register_blueprint(api, url_prefix='/api')
+
+
+def fetch_movie_info(movie_title):
+    """
+    Fetches movie information from the OMDB API based on the provided movie
+    title.
+
+    Args:
+        movie_title (str): The title of the movie to search for on the OMDB
+        API.
+
+    Returns:
+        dict or None: A dictionary containing movie information if the API
+        request
+        is successful and the movie is found. Returns None if the movie is not
+        found
+        or if there is an issue with the API request.
+
+    Note:
+        This function sends an HTTP GET request to the OMDB API with the
+        provided movie title and API key. If the response status code is
+        200 (OK), it parses the JSON response and returns a dictionary
+        containing movie details.
+        If the movie is not found or if there is an issue with the API request,
+         it returns None.
+    """
+    api_key = '5eeb20d'
+    url = f'http://www.omdbapi.com/?apikey={api_key}&t={movie_title}'
+    response = requests.get(url)
+    if response.status_code == 200:
+        movie_data = response.json()
+        return movie_data
+    else:
+        return None
 
 
 @app.route('/')
@@ -51,16 +92,24 @@ def user_movies(user_id):
 
 @app.route('/users/<user_id>/add_movie', methods=['GET', 'POST'])
 def add_movie(user_id):
-    """Renders a page to add a new movie for a specific user and handles
-    the submission of the form.
+    """
+    Handles the addition of a new movie to a specific user's list.
 
     Args:
         user_id (str): The ID of the user.
 
     Returns:
-        If the form is submitted successfully, redirects to the
-        user's movies page.
-        Otherwise, renders the add movie page with an error message.
+        If the form is submitted successfully, it redirects to the user's
+        movies page.
+        If the movie title is found on the OMDB API and added to the user's
+        movie list, it redirects to the user's movies page.
+        If there are any errors during the process, it renders the add movie
+        page with an error message.
+
+    Note:
+        This route allows users to add a movie to their list by providing the
+        movie title. It fetches additional movie details from the OMDB API
+        and stores them in the database, associating the movie with the user.
     """
     error_message = None
     if request.method == 'POST':
@@ -69,19 +118,26 @@ def add_movie(user_id):
         try:
             user = User.query.get(user_id)
             if user:
-                new_movie = Movie(title=movie_title)
+                # Fetch movie information from OMDB API
+                movie_data = fetch_movie_info(movie_title)
+                if movie_data:
+                    new_movie = Movie(
+                        title=movie_title,
+                        director=movie_data.get('Director'),
+                        year=movie_data.get('Year'),
+                        rating=float(movie_data.get('imdbRating'))
+                    )
 
-                # Associate the movie with the user
-                user.movies.append(new_movie)
+                    user.movies.append(new_movie)
 
-                # Commit the session once after all changes
-                db.session.commit()
+                    db.session.commit()
 
-                return redirect(url_for('user_movies', user_id=user_id))
+                    return redirect(url_for('user_movies', user_id=user_id))
+                else:
+                    error_message = "Movie not found on OMDB"
             else:
                 error_message = "User not found"
         except Exception as e:
-            # Handle exceptions and log them as needed
             db.session.rollback()
             error_message = str(e)
 
