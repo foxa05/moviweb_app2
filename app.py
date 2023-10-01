@@ -1,5 +1,4 @@
 from flask import Flask, render_template, request, redirect, url_for
-from flask_sqlalchemy import SQLAlchemy
 from DataManager.sqlite_data_manager import SQLiteDataManager
 from models import User, Movie
 from database import db
